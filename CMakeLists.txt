@@ -10,6 +10,7 @@ add_executable(clickhousefiller
     main.cpp
     ClickhouseFiller.cpp
     ClickhouseFiller.hpp
+    json.hpp
 )
 
 target_link_libraries(
