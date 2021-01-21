@@ -215,19 +215,9 @@ ClickhouseFiller::read_file(const std::string& data_file) const {
  */
 ClickhouseFiller::read_data_t
 ClickhouseFiller::parse_json(std::ifstream& file) const {
-    ClickhouseFiller::read_data_t res;
-
     nlohmann::json j;
     file >> j;
-
-    std::cout << j << std::endl;
-
-    res = j["data"]["drivers"].get<ClickhouseFiller::read_data_t>();
-
-    for (auto& i: res) {
-        std::cout << i << std::endl;
-    }
-    return res;
+    return j["data"]["drivers"].get<ClickhouseFiller::read_data_t>();;
 }
 
 /*!

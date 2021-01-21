@@ -59,9 +59,29 @@ void filler_read_json_test() {
     filler.add("data.json");
 }
 
+void filler_read_misc_test() {
+    ClickhouseFiller filler(clickhuse_host, db_name);
+    filler.create_table(table_name, table_scheme);
+    filler.add("data.csv");
+    filler.add("data.json");
+    filler.add("extra.csv");
+    filler.add("dupl.csv");
+}
+
+void filler_ctor_read_misc_test() {
+    ClickhouseFiller filler(clickhuse_host,
+                            db_name,
+                            table_name,
+                            table_scheme,
+                            "data.csv");
+    filler.add("data.csv");
+    filler.add("data.json");
+    filler.add("extra.csv");
+    filler.add("dupl.csv");
+}
 
 int main()
 {
-    filler_read_json_test();
+    filler_ctor_read_misc_test();
     return 0;
 }
