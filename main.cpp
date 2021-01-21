@@ -52,8 +52,16 @@ void filler_reread_test() {
     filler.add("dupl.csv");
 }
 
+
+void filler_read_json_test() {
+    ClickhouseFiller filler(clickhuse_host, db_name);
+    filler.create_table(table_name, table_scheme);
+    filler.add("data.json");
+}
+
+
 int main()
 {
-    filler_reread_test();
+    filler_read_json_test();
     return 0;
 }
