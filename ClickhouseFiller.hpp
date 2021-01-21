@@ -10,6 +10,7 @@
 #include <vector>
 #include <utility>
 #include <unordered_set>
+#include <fstream>
 
 #include <clickhouse/client.h>
 
@@ -25,32 +26,33 @@ public:
     void create_table(std::string_view table_name = "",
                       const ClickhouseFiller::scheme_t& scheme = {});
 
-    size_t add(const std::string& data_file);
-
-    ~ClickhouseFiller();
-private:
     typedef std::string src_data_t;
     typedef std::unordered_set<ClickhouseFiller::src_data_t>
-        select_container_t;
+        src_data_set_t;
+    src_data_set_t add(const std::string& data_file);
+
+    ~ClickhouseFiller();
+private:    
+    typedef std::vector<ClickhouseFiller::src_data_t> read_data_t;
 
     std::string get_creation_scheme() const;
     std::string get_select_scheme() const;
 
     ///> todo: incapsulate and generize these methods
-    std::vector<ClickhouseFiller::src_data_t>
+    ClickhouseFiller::read_data_t
         read_file(const std::string& data_file) const;
-    std::vector<ClickhouseFiller::src_data_t>
-        read_json(const std::string& data_file) const;
-    std::vector<ClickhouseFiller::src_data_t>
-        read_csv(const std::string& data_file) const;
+    ClickhouseFiller::read_data_t
+        parse_json(std::ifstream& file) const;
+    ClickhouseFiller::read_data_t
+        parse_csv(std::ifstream& file) const;
     void validate(const ClickhouseFiller::src_data_t& data) const;
     ///<
 
     void create_db();
     void drop_table();
 
-    /// todo: implement for each type using templates
-    uint64_t select(ClickhouseFiller::select_container_t& container);
+    /// todo: implement for each type using templates ?
+    uint64_t select(ClickhouseFiller::src_data_set_t& container);
 
     clickhouse::Client client_;
     std::string db_name_;
