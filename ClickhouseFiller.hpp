@@ -17,6 +17,9 @@
 class ClickhouseFiller final {
 public:
     typedef std::vector<std::pair<std::string, std::string>> scheme_t;
+    typedef std::string src_data_t;
+    typedef std::unordered_set<ClickhouseFiller::src_data_t>
+        src_data_set_t;
     ClickhouseFiller(const std::string& clickhouse_url,
                      std::string_view db_name,
                      std::string_view table_name = "",
@@ -24,21 +27,19 @@ public:
                      const std::string& data_file = "");
 
     void create_table(std::string_view table_name = "",
-                      const ClickhouseFiller::scheme_t& scheme = {});
-
-    typedef std::string src_data_t;
-    typedef std::unordered_set<ClickhouseFiller::src_data_t>
-        src_data_set_t;
+                      const ClickhouseFiller::scheme_t& scheme = {});    
     src_data_set_t add(const std::string& data_file);
 
     ~ClickhouseFiller();
 private:    
     typedef std::vector<ClickhouseFiller::src_data_t> read_data_t;
 
-    std::string get_creation_scheme() const;
-    std::string get_select_scheme() const;
+    static std::string get_creation_scheme(
+            const ClickhouseFiller::scheme_t& scheme);
+    static std::string get_select_scheme(
+            const ClickhouseFiller::scheme_t& scheme);
 
-    ///> todo: incapsulate and generize these methods
+    ///> todo: use stategy pattern?
     ClickhouseFiller::read_data_t
         read_file(const std::string& data_file) const;
     ClickhouseFiller::read_data_t

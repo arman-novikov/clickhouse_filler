@@ -39,7 +39,6 @@ ClickhouseFiller::ClickhouseFiller(
 } catch (std::system_error &err) {
     //throw ch::clickhouse_error(clickhouse_url + " failed to connect", err.what());
 }
-
 void ClickhouseFiller::create_db() {
     auto query(fmt::format(
                    FMT_COMPILE("CREATE DATABASE IF NOT EXISTS {}"),
@@ -64,14 +63,13 @@ void ClickhouseFiller::create_table(std::string_view table_name,
     if (scheme.size()) {
         this->scheme_ = scheme;
     }
-
     auto query(fmt::format(
                  FMT_COMPILE(
                     "CREATE TABLE IF NOT EXISTS {}.{} {}  ENGINE = Memory"  /// todo: parametrize ENGINE
                  ),
                  this->db_name_,
                  this->table_name_,
-                 this->get_creation_scheme())
+                 this->get_creation_scheme(this->scheme_))
                );
     try {
         this->client_.Execute(query);
@@ -93,7 +91,6 @@ ClickhouseFiller::add(const std::string& data_file) {
     auto data_to_add = this->read_file(data_file);
     ClickhouseFiller::src_data_set_t current_data, ignored;
     uint64_t current_max_id = this->select(current_data);
-
     std::vector<uint64_t> ids;
     decltype(data_to_add) hash_ids;
     for (const auto& value: data_to_add) {
@@ -104,7 +101,6 @@ ClickhouseFiller::add(const std::string& data_file) {
             ignored.insert(value);
         }
     }
-
     {
         ch::Block block;
         auto ids_column = std::make_shared<ch::ColumnUInt64>(ids);
@@ -118,37 +114,44 @@ ClickhouseFiller::add(const std::string& data_file) {
             block
         );
     }
-
     return ignored;
 }
 
-std::string ClickhouseFiller::get_creation_scheme() const {
+/*!
+ * @brief makes string to create columns
+ * @return string like "(id UInt64, name String)"
+ * @todo parametrize and make static
+ */
+std::string ClickhouseFiller::get_creation_scheme(
+        const ClickhouseFiller::scheme_t& scheme) {
     std::vector<std::string> column_names_types;
-    for (const auto& column_type: this->scheme_) {
+    for (const auto& column_type: scheme) {
         column_names_types.push_back(fmt::format(FMT_COMPILE("{} {}"),
             column_type.first, column_type.second));
     }
-
     auto res{
         fmt::format(FMT_COMPILE("({})"),
                     fmt::join(column_names_types, FMT_COMPILE(", ")))
     };
-
     return res;
 }
 
-std::string ClickhouseFiller::get_select_scheme() const {
+/*!
+ * @brief makes string to select all columns
+ * @return string like "id, name"
+ * @todo parametrize and make static
+ */
+std::string ClickhouseFiller::get_select_scheme(
+        const ClickhouseFiller::scheme_t& scheme){
     std::vector<std::string> column_names;
-    for (const auto& column_type: this->scheme_) {
+    for (const auto& column_type: scheme) {
         column_names.push_back(fmt::format(FMT_COMPILE("{}"),
             column_type.first));
     }
-
     auto res{
         fmt::format(FMT_COMPILE("{}"),
                     fmt::join(column_names, FMT_COMPILE(", ")))
     };
-
     return res;
 }
 
@@ -160,55 +163,50 @@ std::string ClickhouseFiller::get_select_scheme() const {
 uint64_t
 ClickhouseFiller::select(ClickhouseFiller::src_data_set_t& container) {
     uint64_t current_max_id{0};
-
     auto select_query(
         fmt::format(FMT_COMPILE("SELECT {} FROM {}.{} ORDER BY id"), /// todo: parametrize ordering
-            this->get_select_scheme(),
+            this->get_select_scheme(this->scheme_),
             this->db_name_,
             this->table_name_)
     );
-
     auto on_select = [&] (const ch::Block& block) {
         for (size_t i = 0; i < block.GetRowCount(); ++i) {
             container.insert(
                std::string{block[1]->As<ch::ColumnString>()->At(i)} ///> HARDCODE
             );
-
             auto id = block[0]->As<ch::ColumnUInt64>()->At(i);  ///> HARDCODE
             current_max_id = std::max(id, current_max_id);
         }
     };
-
     this->client_.Select(select_query, on_select);
     return current_max_id;
 }
 
-
+/*!
+ * @brief reads file and chooses a parser
+ * @param data_file [path] + file name
+ * @return parsed data
+ * @throw std::runtime_error if can't open the file
+ */
 ClickhouseFiller::read_data_t
 ClickhouseFiller::read_file(const std::string& data_file) const {
     ClickhouseFiller::read_data_t res;
-
     std::ifstream file(data_file);
     if (!file.is_open()) {
         throw std::runtime_error("can't open file " + data_file);
     }
-
     if(data_file.substr(data_file.find_last_of(".") + 1) == "json") {
         res = this->parse_json(file);
     } else {
         res = this->parse_csv(file);
     }
-
     for (const auto& val: res) {
         this->validate(val);
     }
-
     return res;
 }
 
-
 /*!
- * @warning stub!
  * @brief data_file path to the json file
  * @return vector of read elements
  * @return vectorized data from file
@@ -223,16 +221,14 @@ ClickhouseFiller::parse_json(std::ifstream& file) const {
 /*!
  * @brief reads file line by line
  * @param data_file path to the csv file
- * @return vector of read elements
- * @throw std::runtime_error if can't open the file
+ * @return vectorized data from file
  */
 ClickhouseFiller::read_data_t
 ClickhouseFiller::parse_csv(std::ifstream& file) const
-{    
+{
     std::vector<ClickhouseFiller::src_data_t> res;
     for (std::string line; std::getline(file, line);)
         res.push_back(line);
-
     file.close();
     return res;
 }
@@ -245,6 +241,9 @@ void ClickhouseFiller::validate(const ClickhouseFiller::src_data_t& data) const
     }
 }
 
+/*!
+ * @brief drops last created table
+ */
 void ClickhouseFiller::drop_table() {
     if (this->table_name_.empty()) {
         return;
