@@ -11,7 +11,7 @@
 #include <utility>
 #include <unordered_set>
 #include <fstream>
-
+#include <memory>
 #include <clickhouse/client.h>
 
 class ClickhouseFiller final {
@@ -20,7 +20,7 @@ public:
     typedef std::string src_data_t;
     typedef std::unordered_set<ClickhouseFiller::src_data_t>
         src_data_set_t;
-    ClickhouseFiller(const std::string& clickhouse_url,
+    ClickhouseFiller(clickhouse::Client& client,
                      std::string_view db_name,
                      std::string_view table_name = "",
                      const ClickhouseFiller::scheme_t& scheme = {},
@@ -55,7 +55,7 @@ private:
     /// todo: implement for each type using templates ?
     uint64_t select(ClickhouseFiller::src_data_set_t& container);
 
-    clickhouse::Client client_;
+    clickhouse::Client* client_;
     std::string db_name_;
     std::string table_name_;
     ClickhouseFiller::scheme_t scheme_;

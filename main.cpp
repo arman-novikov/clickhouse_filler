@@ -5,7 +5,7 @@
 
 using namespace std;
 
-const std::string clickhuse_host{"192.168.1.19"};
+const std::string clickhuse_host{"192.168.1.21"};
 std::string_view db_name{"test"};
 std::string_view table_name{"drivers"};
 ClickhouseFiller::scheme_t table_scheme{
@@ -13,29 +13,44 @@ ClickhouseFiller::scheme_t table_scheme{
 };
 
 void filler_ctor_test() {
-    ClickhouseFiller filler(clickhuse_host,
+    auto client = clickhouse::Client(
+        clickhouse::ClientOptions().SetHost(clickhuse_host)
+    );
+    ClickhouseFiller filler(client,
                             db_name,
                             table_name,
                             table_scheme);
 }
 
 void filler_create_db_test() {
-    ClickhouseFiller filler(clickhuse_host, db_name);
+    auto client = clickhouse::Client(
+        clickhouse::ClientOptions().SetHost(clickhuse_host)
+    );
+    ClickhouseFiller filler(client, db_name);
 }
 
 void filler_create_table_test() {
-    ClickhouseFiller filler(clickhuse_host, db_name);
+    auto client = clickhouse::Client(
+        clickhouse::ClientOptions().SetHost(clickhuse_host)
+    );
+    ClickhouseFiller filler(client, db_name);
     filler.create_table(table_name, table_scheme);
 }
 
 void filler_drop_table_test() {
-    ClickhouseFiller filler(clickhuse_host, db_name);
+    auto client = clickhouse::Client(
+        clickhouse::ClientOptions().SetHost(clickhuse_host)
+    );
+    ClickhouseFiller filler(client, db_name);
     filler.create_table(table_name, table_scheme);
     filler.create_table("table", table_scheme);
 }
 
 void filler_read_test() {
-    ClickhouseFiller filler(clickhuse_host, db_name);
+    auto client = clickhouse::Client(
+        clickhouse::ClientOptions().SetHost(clickhuse_host)
+    );
+    ClickhouseFiller filler(client, db_name);
     filler.create_table(table_name, table_scheme);
     filler.add("data.csv");
     filler.add("extra.csv");
@@ -43,7 +58,10 @@ void filler_read_test() {
 }
 
 void filler_reread_test() {
-    ClickhouseFiller filler(clickhuse_host, db_name);
+    auto client = clickhouse::Client(
+        clickhouse::ClientOptions().SetHost(clickhuse_host)
+    );
+    ClickhouseFiller filler(client, db_name);
     filler.create_table(table_name, table_scheme);
     filler.add("data.csv");
     int x; cin >> x;
@@ -54,13 +72,19 @@ void filler_reread_test() {
 
 
 void filler_read_json_test() {
-    ClickhouseFiller filler(clickhuse_host, db_name);
+    auto client = clickhouse::Client(
+        clickhouse::ClientOptions().SetHost(clickhuse_host)
+    );
+    ClickhouseFiller filler(client, db_name);
     filler.create_table(table_name, table_scheme);
     filler.add("data.json");
 }
 
 void filler_read_misc_test() {
-    ClickhouseFiller filler(clickhuse_host, db_name);
+    auto client = clickhouse::Client(
+        clickhouse::ClientOptions().SetHost(clickhuse_host)
+    );
+    ClickhouseFiller filler(client, db_name);
     filler.create_table(table_name, table_scheme);
     filler.add("data.csv");
     filler.add("data.json");
@@ -69,7 +93,10 @@ void filler_read_misc_test() {
 }
 
 void filler_ctor_read_misc_test() {
-    ClickhouseFiller filler(clickhuse_host,
+    auto client = clickhouse::Client(
+        clickhouse::ClientOptions().SetHost(clickhuse_host)
+    );
+    ClickhouseFiller filler(client,
                             db_name,
                             table_name,
                             table_scheme,
