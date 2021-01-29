@@ -11,6 +11,9 @@ add_executable(clickhousefiller
     ClickhouseFiller.cpp
     ClickhouseFiller.hpp
     chfiller_tests.hpp
+    chfiller_tests.cpp
+    uploadDriversData.hpp
+    uploadDriversData.cpp
     nlohmann_json/json.hpp
 )
 
