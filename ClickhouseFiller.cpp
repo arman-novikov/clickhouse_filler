@@ -22,7 +22,7 @@ namespace ch = clickhouse;
 *	- validate data from a supplied file and pushes data to the table
 */
 ClickhouseFiller::ClickhouseFiller(
-            clickhouse::Client& client,
+            ch::Client& client,
             std::string_view db_name,
             std::string_view table_name,
             const ClickhouseFiller::scheme_t& scheme,
@@ -53,7 +53,7 @@ void ClickhouseFiller::CreateDb() {
  * @details if scheme is faulty throws clickhouse::ServerException
  */
 void ClickhouseFiller::CreateTable(std::string_view table_name,
-                                    const ClickhouseFiller::scheme_t& scheme) {    
+                                   const ClickhouseFiller::scheme_t& scheme) {
     if (!table_name.empty()) {
         table_name_ = table_name;
     }
@@ -73,7 +73,7 @@ void ClickhouseFiller::CreateTable(std::string_view table_name,
  * @param data_file file to read data from
  * @return set of not passed values
  * @warning make sure a table is created
- * @todo make it type generic and split into methods
+ * @todo make it type generic
  */
 ClickhouseFiller::src_data_set_t
 ClickhouseFiller::Add(const std::string& data_file) {
@@ -107,7 +107,6 @@ ClickhouseFiller::Add(const std::string& data_file) {
 /*!
  * @brief makes string to create columns
  * @return string like "(id UInt64, name String)"
- * @todo parametrize and make static
  */
 std::string ClickhouseFiller::GetCreationScheme(
         const ClickhouseFiller::scheme_t& scheme) {
@@ -126,7 +125,6 @@ std::string ClickhouseFiller::GetCreationScheme(
 /*!
  * @brief makes string to select all columns
  * @return string like "id, name"
- * @todo parametrize and make static
  */
 std::string ClickhouseFiller::GetSelectScheme(
         const ClickhouseFiller::scheme_t& scheme){
