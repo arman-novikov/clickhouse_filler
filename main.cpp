@@ -34,7 +34,7 @@ void filler_create_table_test() {
         clickhouse::ClientOptions().SetHost(clickhuse_host)
     );
     ClickhouseFiller filler(client, db_name);
-    filler.create_table(table_name, table_scheme);
+    filler.CreateTable(table_name, table_scheme);
 }
 
 void filler_drop_table_test() {
@@ -42,8 +42,8 @@ void filler_drop_table_test() {
         clickhouse::ClientOptions().SetHost(clickhuse_host)
     );
     ClickhouseFiller filler(client, db_name);
-    filler.create_table(table_name, table_scheme);
-    filler.create_table("table", table_scheme);
+    filler.CreateTable(table_name, table_scheme);
+    filler.CreateTable("table", table_scheme);
 }
 
 void filler_read_test() {
@@ -51,10 +51,10 @@ void filler_read_test() {
         clickhouse::ClientOptions().SetHost(clickhuse_host)
     );
     ClickhouseFiller filler(client, db_name);
-    filler.create_table(table_name, table_scheme);
-    filler.add("data.csv");
-    filler.add("extra.csv");
-    filler.add("dupl.csv");
+    filler.CreateTable(table_name, table_scheme);
+    filler.Add("data.csv");
+    filler.Add("extra.csv");
+    filler.Add("dupl.csv");
 }
 
 void filler_reread_test() {
@@ -62,12 +62,12 @@ void filler_reread_test() {
         clickhouse::ClientOptions().SetHost(clickhuse_host)
     );
     ClickhouseFiller filler(client, db_name);
-    filler.create_table(table_name, table_scheme);
-    filler.add("data.csv");
+    filler.CreateTable(table_name, table_scheme);
+    filler.Add("data.csv");
     int x; cin >> x;
-    filler.create_table(table_name, table_scheme);
-    filler.add("extra.csv");
-    filler.add("dupl.csv");
+    filler.CreateTable(table_name, table_scheme);
+    filler.Add("extra.csv");
+    filler.Add("dupl.csv");
 }
 
 
@@ -76,8 +76,8 @@ void filler_read_json_test() {
         clickhouse::ClientOptions().SetHost(clickhuse_host)
     );
     ClickhouseFiller filler(client, db_name);
-    filler.create_table(table_name, table_scheme);
-    filler.add("data.json");
+    filler.CreateTable(table_name, table_scheme);
+    filler.Add("data.json");
 }
 
 void filler_read_misc_test() {
@@ -85,11 +85,11 @@ void filler_read_misc_test() {
         clickhouse::ClientOptions().SetHost(clickhuse_host)
     );
     ClickhouseFiller filler(client, db_name);
-    filler.create_table(table_name, table_scheme);
-    filler.add("data.csv");
-    filler.add("data.json");
-    filler.add("extra.csv");
-    filler.add("dupl.csv");
+    filler.CreateTable(table_name, table_scheme);
+    filler.Add("data.csv");
+    filler.Add("data.json");
+    filler.Add("extra.csv");
+    filler.Add("dupl.csv");
 }
 
 void filler_ctor_read_misc_test() {
@@ -101,10 +101,10 @@ void filler_ctor_read_misc_test() {
                             table_name,
                             table_scheme,
                             "data.csv");
-    filler.add("data.csv");
-    filler.add("data.json");
-    filler.add("extra.csv");
-    filler.add("dupl.csv");
+    filler.Add("data.csv");
+    filler.Add("data.json");
+    filler.Add("extra.csv");
+    filler.Add("dupl.csv");
 }
 
 int main()
