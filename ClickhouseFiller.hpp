@@ -28,7 +28,8 @@ public:
 
     void CreateTable(std::string_view table_name = "",
                       const scheme_t& scheme = {});
-    src_data_set_t Add(const std::string& data_file);
+    void DropTable();
+    std::pair<size_t, size_t> Add(const std::string& data_file);
 
     ~ClickhouseFiller() = default;
 private:    
@@ -45,7 +46,6 @@ private:
     ///<
 
     void CreateDb();
-    void DropTable();
 
     /// todo: implement for each type using templates ?
     uint64_t Select(src_data_set_t& container);

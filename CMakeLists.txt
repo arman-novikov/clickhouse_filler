@@ -10,6 +10,7 @@ add_executable(clickhousefiller
     main.cpp
     ClickhouseFiller.cpp
     ClickhouseFiller.hpp
+    chfiller_tests.hpp
     nlohmann_json/json.hpp
 )
 
@@ -17,4 +18,5 @@ target_link_libraries(
     ${PROJECT_NAME}
     clickhouse-cpp-lib-static cityhash-lib lz4-lib
     fmt
+    gflags
 )

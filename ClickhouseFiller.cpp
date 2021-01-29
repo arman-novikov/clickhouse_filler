@@ -13,8 +13,11 @@
 namespace ch = clickhouse;
 /*!
 * @brief creates a table in DB and fills with data from a supplied file
+* @param client Clickhouse client
 * @param db_name name of data base to be used
 * @param table_name table to be created and filled
+* @param scheme a vector of string pairs. example:
+*   {{"id", "UInt64"}, {"hash_id", "String"}}
 * @param data_file path to a file to take data from (json, csv)
 * @details
 *	- creates DB if not exists
@@ -31,7 +34,9 @@ ClickhouseFiller::ClickhouseFiller(
     db_name_{db_name}, table_name_{table_name}, scheme_{scheme}
 {
     CreateDb();
-    DropTable(); // drop the current one
+    if (table_name.empty() || scheme_.size() == 0) {
+        return;
+    }
     CreateTable();
     if (data_file.length()) {
         Add(data_file);
@@ -48,7 +53,8 @@ void ClickhouseFiller::CreateDb() {
 /*!
  * @brief creates table if not exists
  * @param table_name
- * @param scheme something like "(id UInt64, name String) ENGINE = Memory"
+ * @param scheme a vector of string pairs. example:
+ *   {{"id", "UInt64"}, {"hash_id", "String"}}
  * @throw clickhouse::ServerException
  * @details if scheme is faulty throws clickhouse::ServerException
  */
@@ -71,24 +77,23 @@ void ClickhouseFiller::CreateTable(std::string_view table_name,
 /*!
  * @brief inserts data from file into table
  * @param data_file file to read data from
- * @return set of not passed values
+ * @return a number of inserted and a number of duplicated values
  * @warning make sure a table is created
  * @todo make it type generic
  */
-ClickhouseFiller::src_data_set_t
-ClickhouseFiller::Add(const std::string& data_file) {
+std::pair<size_t, size_t> ClickhouseFiller::Add(const std::string& data_file) {
     read_data_t data_to_add = ReadFile(data_file);
-    src_data_set_t current_data, ignored;
+    src_data_set_t current_data;
     uint64_t current_max_id = Select(current_data);
     std::vector<uint64_t> ids;
-    decltype(data_to_add) hash_ids;
+    decltype(data_to_add) hash_ids{}, duplicates{};
 
     for (const auto& value: data_to_add) {
         if(current_data.find(value) == current_data.end()) {
             hash_ids.push_back(value);
             ids.push_back(++current_max_id);
         } else {
-            ignored.insert(value);
+            duplicates.push_back(value);
         }
     }
 
@@ -101,7 +106,7 @@ ClickhouseFiller::Add(const std::string& data_file) {
         fmt::format(FMT_COMPILE("{}.{}"), db_name_, table_name_),
         block
     );
-    return ignored;
+    return std::make_pair<>(hash_ids.size(), duplicates.size());
 }
 
 /*!
